@@ -17,9 +17,11 @@ of fzf with the simplicity of plain text files.
     🔌 Terminal-native - Works in your workflow, not against it
 
 ## Installation
+```bash
 git clone https://github.com/Njoter/fznote
 cd fznote
 cargo install --path .
+```
 
 ## Requirements
 
