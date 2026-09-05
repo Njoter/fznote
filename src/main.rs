@@ -21,7 +21,9 @@ enum Action {
     // Add a new note
     Add {
         name: String,
-    }
+    },
+    // Select a file to read with configured reader
+    Read,
 }
 
 fn main() -> Result<()> {
@@ -40,6 +42,9 @@ fn main() -> Result<()> {
     match cli.action {
         Some(Action::Add { name }) => {
             commands::add(config, &name)?;
+        }
+        Some(Action::Read) => {
+            commands::read(config)?;
         }
         None => {
             commands::print(config)?;
