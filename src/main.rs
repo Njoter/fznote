@@ -1,43 +1,50 @@
-use std::{fs, path::PathBuf};
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 
 use crate::config::Dependencies;
+
 mod config;
+mod commands;
 mod fzf;
 
-fn main() -> Result<()> {
-    let dependencies = Dependencies::check();
-    dependencies.ensure_fzf()?;
-    dependencies.warn_optional();
-
-    let config = config::Config::load()?;
-    let notes_directory = config.directory;
-    let preview_reader = config.preview_reader;
-
-    let filenames = get_filenames(&notes_directory)?;
-
-    if let Some(selected) = fzf::select_file(&filenames, notes_directory, preview_reader)? {
-        println!("Selected: {}", selected);
-    };
-
-    Ok(())
+#[derive(Parser)]
+#[command(name = "fznote")]
+#[command(about = "A fuzzy note manager powered by fzf")]
+#[command(version = "0.1.0")]
+struct Cli {
+    #[command(subcommand)]
+    action: Option<Action>,
 }
 
-fn get_filenames(dir: &PathBuf) -> Result<Vec<String>> {
-    let mut filenames = Vec::new();
-    let entries = fs::read_dir(dir)?;
+#[derive(Subcommand)]
+enum Action {
+    // Add a new note
+    Add {
+        name: String,
+    }
+}
 
-    for entry in entries {
-        let path = entry?.path();
+fn main() -> Result<()> {
+    // Parse CLI
+    let cli = Cli::parse();
 
-        if path.is_file() {
-            if let Some(name) = path.file_name() {
-                if let Some(name) = name.to_str() {
-                    filenames.push(name.to_string());
-                }
-            }
+    // Check dependencies
+    let deps = Dependencies::check();
+    deps.ensure_fzf()?;
+    deps.warn_optional();
+
+    // Load config
+    let config = config::Config::load()?;
+
+    // Execute action or default to print
+    match cli.action {
+        Some(Action::Add { name }) => {
+            commands::add(config, &name)?;
         }
+        None => {
+            commands::print(config)?;
+        },
     }
 
-    Ok(filenames)
+    Ok(())
 }

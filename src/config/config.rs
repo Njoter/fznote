@@ -43,7 +43,6 @@ impl Config {
 
         let config = if config_file_path.exists() {
             // Load from file
-            println!("Loading config from: {}", config_file_path.display());
             let content = std::fs::read_to_string(&config_file_path)?;
             serde_yaml::from_str(&content)?
         } else {
