@@ -30,6 +30,7 @@ enum Action {
     // Select a file to read with configured reader
     Read,
     Delete,
+    Edit,
 }
 
 fn main() -> Result<()> {
@@ -51,6 +52,7 @@ fn main() -> Result<()> {
         }
         Some(Action::Read) => commands::read(&config)?,
         Some(Action::Delete) => commands::delete(&config)?,
+        Some(Action::Edit) => commands::edit(&config)?,
         None => commands::print(&config)?,
     }
 

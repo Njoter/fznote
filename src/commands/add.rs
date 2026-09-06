@@ -1,6 +1,6 @@
-use std::process::Command;
+use std::path::Path;
 
-use crate::config::Config;
+use crate::{config::Config, utils::run_command};
 use anyhow::Result;
 
 pub fn execute(
@@ -8,9 +8,10 @@ pub fn execute(
     name: &str,
     extension: Option<String>
 ) -> Result<()> {
-    let ext = extension.unwrap_or_else(|| config.file_extension.clone());
-    let ext = ext.trim_start_matches('.').to_string();
-
+    let ext = extension
+        .as_deref()
+        .unwrap_or(&config.file_extension)
+        .trim_start_matches(".");
     let filename = format!("{}.{}", name, ext);
     let path = config.directory.join(&filename);
 
@@ -18,16 +19,14 @@ pub fn execute(
         anyhow::bail!("Note '{}' already exists", filename);
     }
 
-    std::fs::File::create(&path)?;
+    create_file(&path)?;
+    run_command(&config.editor, &path)?;
+
+    Ok(())
+}
+
+fn create_file(path: &Path) -> Result<()> {
+    std::fs::File::create(path)?;
     println!("Created file: {}", path.display());
-
-    let status = Command::new(&config.editor)
-        .arg(&path)
-        .status()?;
-
-    if !status.success() {
-        anyhow::bail!("Editor exited with error");
-    }
-
     Ok(())
 }
