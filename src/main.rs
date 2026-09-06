@@ -6,6 +6,7 @@ use crate::config::Dependencies;
 mod config;
 mod commands;
 mod fzf;
+mod utils;
 
 #[derive(Parser)]
 #[command(name = "fznote")]
@@ -21,9 +22,14 @@ enum Action {
     // Add a new note
     Add {
         name: String,
+
+        // Fle extension override
+        #[arg(short = 'x', long)]
+        extension: Option<String>,
     },
     // Select a file to read with configured reader
     Read,
+    Delete,
 }
 
 fn main() -> Result<()> {
@@ -40,15 +46,12 @@ fn main() -> Result<()> {
 
     // Execute action or default to print
     match cli.action {
-        Some(Action::Add { name }) => {
-            commands::add(&config, &name)?;
+        Some(Action::Add { name, extension }) => {
+            commands::add(&config, &name, extension)?;
         }
-        Some(Action::Read) => {
-            commands::read(&config)?;
-        }
-        None => {
-            commands::print(&config)?;
-        },
+        Some(Action::Read) => commands::read(&config)?,
+        Some(Action::Delete) => commands::delete(&config)?,
+        None => commands::print(&config)?,
     }
 
     Ok(())
