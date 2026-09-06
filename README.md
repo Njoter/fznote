@@ -11,19 +11,19 @@ welcome!
 
 ## Features
 
-    🎯 Fuzzy search - Find any note instantly with fzf
+🎯 Fuzzy search - Find any note instantly with fzf
 
-    📝 Plain text - Your notes are just files. Use any editor, any format
+📝 Plain text - Your notes are just files. Use any editor, any format
 
-    🔒 Git-backed - Version control built in (coming soon)
+🔒 Git-backed - Version control built in (coming soon)
 
-    🎨 Preview and printing with configurable reader
+🎨 Preview and printing with configurable reader
 
-    🔍 Content search - Search through all your notes with ripgrep + fzf
+🔍 Content search - Search through all your notes with ripgrep + fzf
 
-    🔌 Terminal-native - Works in your workflow, not against it
+🔌 Terminal-native - Works in your workflow, not against it
 
-    ⚙️ Configurable - Customize reader, editor, and more
+⚙️ Configurable - Customize reader, editor, and more
 
 ## Installation
     bash
