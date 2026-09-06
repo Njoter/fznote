@@ -31,6 +31,7 @@ enum Action {
     Read,
     Delete,
     Edit,
+    Path,
 }
 
 fn main() -> Result<()> {
@@ -53,6 +54,7 @@ fn main() -> Result<()> {
         Some(Action::Read) => commands::read(&config)?,
         Some(Action::Delete) => commands::delete(&config)?,
         Some(Action::Edit) => commands::edit(&config)?,
+        Some(Action::Path) => commands::path(&config)?,
         None => commands::print(&config)?,
     }
 
