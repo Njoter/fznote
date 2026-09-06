@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     #[serde(default = "defaults::notes_directory")]
     pub directory: PathBuf,
+    #[serde(default = "defaults::current_book")]
+    pub current_book: String,
     #[serde(default = "defaults::reader")]
     pub reader: String,
     #[serde(default = "defaults::reader")]
@@ -31,6 +33,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             directory: defaults::notes_directory(),
+            current_book: defaults::current_book(),
             reader: defaults::reader(),
             preview_reader: defaults::reader(),
             editor: defaults::editor(),
@@ -67,10 +70,11 @@ impl Config {
             default_config
         };
 
-        // Create notes directory if it doesn't exist
-        if !config.directory.exists() {
-        println!("Creating notes directory: {}", config.directory.display());
-            std::fs::create_dir_all(&config.directory)?;
+        // Create book directory if it doesn't exist
+        let book_path = config.directory.join(&config.current_book);
+        if !book_path.exists() {
+        println!("Creating book: {}", config.current_book);
+            std::fs::create_dir_all(&book_path)?;
         }
 
         Ok(config)

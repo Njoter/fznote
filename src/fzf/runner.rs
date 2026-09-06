@@ -1,10 +1,11 @@
 use std::{fs, io::Write, path::PathBuf, process::{Command, Stdio}};
 use anyhow::Result;
 
-pub fn select_file(dir: &PathBuf, preview_reader: &str) -> Result<Option<PathBuf>> {
-    let filenames = get_filenames(&dir)?;
+pub fn select_file(dir: &PathBuf, book: &str, preview_reader: &str) -> Result<Option<PathBuf>> {
+    let book_path = dir.join(book);
+    let filenames = get_filenames(&book_path)?;
     let input = filenames.join("\n");
-    let preview_cmd = build_preview_cmd(preview_reader, dir);
+    let preview_cmd = build_preview_cmd(preview_reader, &book_path);
 
     let mut child = Command::new("fzf")
         .arg("--layout=reverse")
@@ -25,21 +26,20 @@ pub fn select_file(dir: &PathBuf, preview_reader: &str) -> Result<Option<PathBuf
         let selected = String::from_utf8(output.stdout)?;
         let selected = selected.trim();
         if !selected.is_empty() {
-            return Ok(Some(dir.join(selected)));
+            return Ok(Some(book_path.join(selected)));
         }
     }
 
     Ok(None)
 }
 
-pub fn select_from_content_search(
-    dir: &PathBuf,
-    preview_reader: &str
-) -> Result<Option<PathBuf>> {
+pub fn select_from_content_search(dir: &PathBuf, book: &str, preview_reader: &str) -> Result<Option<PathBuf>> {
+    let book_path = dir.join(book);
+
     // Build ripgrep command
     let mut rg_cmd = Command::new("rg");
     rg_cmd
-        .current_dir(dir)
+        .current_dir(&book_path)
         .arg("--with-filename")
         .arg("--line-number")
         .arg("--field-match-separator=\t")
@@ -50,7 +50,7 @@ pub fn select_from_content_search(
         .spawn()?;
 
     // Build fzf preview command
-    let preview_cmd = build_search_preview_cmd(preview_reader, dir);
+    let preview_cmd = build_search_preview_cmd(preview_reader, &book_path);
     
     // Pipe rg output to fzf
     let fzf_child = Command::new("fzf")
@@ -73,7 +73,7 @@ pub fn select_from_content_search(
             // Split by tab to get filename (first field)
             let parts: Vec<&str> = selected.split('\t').collect();
             if let Some(filename) = parts.first() {
-                return Ok(Some(dir.join(filename)));
+                return Ok(Some(book_path.join(filename)));
             }
         }
     }
@@ -104,8 +104,8 @@ fn build_preview_cmd(reader: &str, dir: &PathBuf) -> String {
     let dir_string = dir.display();
 
     match reader {
-        "bat" => format!("bat --color=always {}/{{}}", dir_string),
-        _ => format!("{} {}/{{}}", reader, dir_string)
+        "bat" => format!("bat --color=always \"{}\"/{{}}", dir_string),
+        _ => format!("{} \"{}\"/{{}}", reader, dir_string)
     }
 }
 
@@ -113,7 +113,7 @@ fn build_search_preview_cmd(reader: &str, dir: &PathBuf) -> String {
     let dir_string = dir.display();
 
     match reader {
-        "bat" => format!("bat --color=always --highlight-line {{2}} {}/{{1}}", dir_string),
-        _ => format!("{} {}/{{1}}", reader, dir_string),
+        "bat" => format!("bat --color=always --highlight-line {{2}} \"{}\"/{{1}}", dir_string),
+        _ => format!("{} \"{}\"/{{1}}", reader, dir_string),
     }
 }

@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use crate::config::Dependencies;
 
 mod config;
-mod commands;
+mod actions;
 mod fzf;
 mod utils;
 
@@ -19,15 +19,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Action {
-    // Add a new note
     Add {
         name: String,
 
-        // Fle extension override
         #[arg(short = 'x', long)]
         extension: Option<String>,
     },
-    // Select a file to read with configured reader
     Read {
         #[arg(short = 's', long)]
         search: bool,
@@ -44,6 +41,15 @@ enum Action {
         #[arg(short = 's', long)]
         search: bool,
     },
+    Book {
+        #[command(subcommand)]
+        action: BookAction,
+    },
+}
+
+#[derive(Subcommand)]
+enum BookAction {
+    List,
 }
 
 fn main() -> Result<()> {
@@ -60,12 +66,18 @@ fn main() -> Result<()> {
 
     // Execute action or default to print
     match cli.action {
-        Some(Action::Add { name, extension }) => commands::add(&config, &name, extension)?,
-        Some(Action::Read { search }) => commands::read(&config, search)?,
-        Some(Action::Delete { search }) => commands::delete(&config, search)?,
-        Some(Action::Edit { search }) => commands::edit(&config, search)?,
-        Some(Action::Path { search }) => commands::path(&config, search)?,
-        None => commands::print(&config)?,
+        Some(Action::Add    { name, extension }) => actions::add(&config, &name, extension)?,
+        Some(Action::Read   { search }) => actions::read(&config, search)?,
+        Some(Action::Delete { search }) => actions::delete(&config, search)?,
+        Some(Action::Edit   { search }) => actions::edit(&config, search)?,
+        Some(Action::Path   { search }) => actions::path(&config, search)?,
+        Some(Action::Book   { action }) => {
+            match action {
+                BookAction::List => actions::book::list(&config)?,
+            }
+        }
+
+        None => actions::print(&config)?,
     }
 
     Ok(())
