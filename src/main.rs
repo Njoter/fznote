@@ -28,10 +28,22 @@ enum Action {
         extension: Option<String>,
     },
     // Select a file to read with configured reader
-    Read,
-    Delete,
-    Edit,
-    Path,
+    Read {
+        #[arg(short = 's', long)]
+        search: bool,
+    },
+    Delete {
+        #[arg(short = 's', long)]
+        search: bool,
+    },
+    Edit {
+        #[arg(short = 's', long)]
+        search: bool,
+    },
+    Path {
+        #[arg(short = 's', long)]
+        search: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -48,13 +60,11 @@ fn main() -> Result<()> {
 
     // Execute action or default to print
     match cli.action {
-        Some(Action::Add { name, extension }) => {
-            commands::add(&config, &name, extension)?;
-        }
-        Some(Action::Read) => commands::read(&config)?,
-        Some(Action::Delete) => commands::delete(&config)?,
-        Some(Action::Edit) => commands::edit(&config)?,
-        Some(Action::Path) => commands::path(&config)?,
+        Some(Action::Add { name, extension }) => commands::add(&config, &name, extension)?,
+        Some(Action::Read { search }) => commands::read(&config, search)?,
+        Some(Action::Delete { search }) => commands::delete(&config, search)?,
+        Some(Action::Edit { search }) => commands::edit(&config, search)?,
+        Some(Action::Path { search }) => commands::path(&config, search)?,
         None => commands::print(&config)?,
     }
 

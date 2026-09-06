@@ -3,13 +3,16 @@ use std::path::Path;
 use crate::{config::Config, fzf, utils::confirm};
 use anyhow::Result;
 
-pub fn execute(config: &Config) -> Result<()> {
-    match fzf::select_file(&config.directory, &config.preview_reader)? {
-        Some(selected) => {
-            delete_file(&selected)?;
+pub fn execute(config: &Config, search: bool) -> Result<()> {
+    if search {
+        match fzf::select_from_content_search(&config.directory, &config.preview_reader)? {
+            Some(selected) => delete_file(&selected)?,
+            None => println!("No file selected.")
         }
-        None => {
-            println!("No file selected.");
+    } else {
+        match fzf::select_file(&config.directory, &config.preview_reader)? {
+            Some(selected) => delete_file(&selected)?,
+            None => println!("No file selected.")
         }
     }
 
