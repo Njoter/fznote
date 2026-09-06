@@ -1,6 +1,7 @@
 use super::defaults;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+use anyhow::Result;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -44,7 +45,7 @@ impl Default for Config {
 
 impl Config {
     // Load config from file, or create default if it doesn't exist
-    pub fn load() -> anyhow::Result<Self> {
+    pub fn load() -> Result<Self> {
         let config_file_path = config_file_path();
 
         let config = if config_file_path.exists() {
@@ -78,5 +79,12 @@ impl Config {
         }
 
         Ok(config)
+    }
+
+    pub fn save(&self) -> Result<()> {
+        let config_path = config_file_path();
+        let yaml = serde_yaml::to_string(&self)?;
+        std::fs::write(&config_path, yaml)?;
+        Ok(())
     }
 }

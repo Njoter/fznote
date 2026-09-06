@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-use crate::config::Dependencies;
+use crate::config::{Config, Dependencies};
 
 mod config;
 mod actions;
@@ -52,6 +52,9 @@ enum BookAction {
     New {
         name: String,
     },
+    Switch {
+        name: String,
+    }
 }
 
 fn main() -> Result<()> {
@@ -64,7 +67,7 @@ fn main() -> Result<()> {
     deps.warn_optional();
 
     // Load config
-    let config = config::Config::load()?;
+    let mut config = Config::load()?;
 
     // Execute action or default to print
     match cli.action {
@@ -73,9 +76,11 @@ fn main() -> Result<()> {
         Some(Action::Delete { search }) => actions::delete(&config, search)?,
         Some(Action::Edit   { search }) => actions::edit(&config, search)?,
         Some(Action::Path   { search }) => actions::path(&config, search)?,
-        Some(Action::Books   { action }) => {
+        Some(Action::Books  { action }) => {
             match action {
-                Some(BookAction::New { name }) => actions::books::new(&config, &name)?,
+                Some(BookAction::New    { name }) => actions::books::new(&config, &name)?,
+                Some(BookAction::Switch { name }) => actions::books::switch(&mut config, &name)?,
+
                 None => actions::books::list(&config)?,
             }
         }
