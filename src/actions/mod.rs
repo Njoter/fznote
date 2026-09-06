@@ -4,7 +4,7 @@ mod read;
 mod delete;
 mod edit;
 mod path;
-pub mod book;
+pub mod books;
 
 pub use add::execute as add;
 pub use print::execute as print;

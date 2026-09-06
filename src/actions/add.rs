@@ -27,6 +27,6 @@ pub fn execute(config: &Config, name: &str, extension: Option<String>) -> Result
 
 fn create_file(path: &Path) -> Result<()> {
     std::fs::File::create(path)?;
-    println!("Created file: {}", path.display());
+    println!("Created file: '{}'", path.display());
     Ok(())
 }

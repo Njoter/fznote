@@ -41,15 +41,17 @@ enum Action {
         #[arg(short = 's', long)]
         search: bool,
     },
-    Book {
+    Books {
         #[command(subcommand)]
-        action: BookAction,
+        action: Option<BookAction>,
     },
 }
 
 #[derive(Subcommand)]
 enum BookAction {
-    List,
+    New {
+        name: String,
+    },
 }
 
 fn main() -> Result<()> {
@@ -71,9 +73,10 @@ fn main() -> Result<()> {
         Some(Action::Delete { search }) => actions::delete(&config, search)?,
         Some(Action::Edit   { search }) => actions::edit(&config, search)?,
         Some(Action::Path   { search }) => actions::path(&config, search)?,
-        Some(Action::Book   { action }) => {
+        Some(Action::Books   { action }) => {
             match action {
-                BookAction::List => actions::book::list(&config)?,
+                Some(BookAction::New { name }) => actions::books::new(&config, &name)?,
+                None => actions::books::list(&config)?,
             }
         }
 

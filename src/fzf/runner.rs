@@ -97,6 +97,7 @@ fn get_filenames(dir: &PathBuf) -> Result<Vec<String>> {
         }
     }
 
+    filenames.sort();
     Ok(filenames)
 }
 

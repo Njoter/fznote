@@ -6,6 +6,12 @@ use anyhow::Result;
 pub fn execute(config: &Config) -> Result<()> {
     let books = get_books(&config.directory)?;
 
+    if books.is_empty() {
+        println!("📚 No books found.");
+        println!("   Create one with: fznote book add <name>");
+        return Ok(());
+    }
+
     println!("Books");
     println!("-------------------------------------------------");
     for book in books {
@@ -35,5 +41,6 @@ fn get_books(dir: &PathBuf) -> Result<Vec<String>> {
         }
     }
 
+    books.sort();
     Ok(books)
 }
