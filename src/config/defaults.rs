@@ -23,3 +23,7 @@ pub(super) fn editor() -> String {
         }
     })
 }
+
+pub(super) fn file_extension() -> String {
+    "md".to_string()
+}

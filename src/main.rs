@@ -41,13 +41,13 @@ fn main() -> Result<()> {
     // Execute action or default to print
     match cli.action {
         Some(Action::Add { name }) => {
-            commands::add(config, &name)?;
+            commands::add(&config, &name)?;
         }
         Some(Action::Read) => {
-            commands::read(config)?;
+            commands::read(&config)?;
         }
         None => {
-            commands::print(config)?;
+            commands::print(&config)?;
         },
     }
 

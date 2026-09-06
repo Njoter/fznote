@@ -1,16 +1,16 @@
 use std::{fs, io::Write, path::PathBuf, process::{Command, Stdio}};
 use anyhow::Result;
 
-pub fn select_file(dir: PathBuf, reader: String) -> Result<Option<String>> {
+pub fn select_file(dir: &PathBuf, reader: &str) -> Result<Option<PathBuf>> {
     let filenames = get_filenames(&dir)?;
     let input = filenames.join("\n");
 
-    let preview_args = format!("{} {}/{{}}", reader, dir.display());
+    let preview_cmd = build_preview_cmd(reader, dir);
 
     let mut child = Command::new("fzf")
         .arg("--layout=reverse")
         .arg("--preview")
-        .arg(preview_args)
+        .arg(preview_cmd)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
@@ -26,7 +26,7 @@ pub fn select_file(dir: PathBuf, reader: String) -> Result<Option<String>> {
         let selected = String::from_utf8(output.stdout)?;
         let selected = selected.trim();
         if !selected.is_empty() {
-            return Ok(Some(format!("{}/{}", dir.display(), selected)));
+            return Ok(Some(dir.join(selected)));
         }
     }
 
@@ -50,4 +50,13 @@ fn get_filenames(dir: &PathBuf) -> Result<Vec<String>> {
     }
 
     Ok(filenames)
+}
+
+fn build_preview_cmd(reader: &str, dir: &PathBuf) -> String {
+    let dir_string = dir.display();
+
+    match reader {
+        "bat" => format!("bat --color=always {}/{{}}", dir_string),
+        _ => format!("{} {}/{{}}", reader, dir_string)
+    }
 }

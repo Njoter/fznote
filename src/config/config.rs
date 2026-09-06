@@ -12,6 +12,8 @@ pub struct Config {
     pub preview_reader: String,
     #[serde(default = "defaults::editor")]
     pub editor: String,
+    #[serde(default = "defaults::file_extension")]
+    pub file_extension: String,
 }
 
 fn config_directory() -> PathBuf {
@@ -32,6 +34,7 @@ impl Default for Config {
             reader: defaults::reader(),
             preview_reader: defaults::reader(),
             editor: defaults::editor(),
+            file_extension: defaults::file_extension(),
         }
     }
 }
