@@ -52,6 +52,9 @@ enum BookAction {
     New {
         name: String,
     },
+    Delete {
+        name: String,
+    },
     Switch {
         name: String,
     }
@@ -79,6 +82,7 @@ fn main() -> Result<()> {
         Some(Action::Books  { action }) => {
             match action {
                 Some(BookAction::New    { name }) => actions::books::new(&config, &name)?,
+                Some(BookAction::Delete { name }) => actions::books::delete(&config, &name)?,
                 Some(BookAction::Switch { name }) => actions::books::switch(&mut config, &name)?,
 
                 None => actions::books::list(&config)?,
