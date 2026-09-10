@@ -83,7 +83,11 @@ fn main() -> Result<()> {
             match action {
                 Some(BookAction::New    { name }) => actions::books::new(&config, &name)?,
                 Some(BookAction::Delete { name }) => actions::books::delete(&config, &name)?,
-                Some(BookAction::Switch { name }) => actions::books::switch(&mut config, &name)?,
+                Some(BookAction::Switch { name }) => {
+                    let book_name = actions::books::switch(&config, &name)?;
+                    config.current_book = book_name;
+                    config.save()?;
+                },
 
                 None => actions::books::list(&config)?,
             }
