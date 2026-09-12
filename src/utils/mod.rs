@@ -1,4 +1,4 @@
-mod prompt;
+pub mod prompt;
 mod commands;
 
 pub use prompt::confirm;

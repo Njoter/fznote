@@ -1,7 +1,5 @@
-use std::io::Write;
-
 use anyhow::Result;
-use crate::{config::Config, git::repo};
+use crate::{config::Config, git::repo, utils::prompt};
 
 pub fn execute(config: &Config, force: bool) -> Result<()> {
     let repository = repo::open_or_init(&config.directory)?;
@@ -23,7 +21,7 @@ pub fn execute(config: &Config, force: bool) -> Result<()> {
     println!("(e.g. git@github.com:user/notes.git)");
     println!();
 
-    let Some(url) = prompt_for_remote_url()? else {
+    let Some(url) = prompt::for_string("Remote URL: ")? else {
         println!("Sync setup cancelled: no URL provided.");
         return Ok(());
     };
@@ -36,20 +34,4 @@ pub fn execute(config: &Config, force: bool) -> Result<()> {
     println!("Run `fznote sync push` to push your notes.");
 
     Ok(())
-}
-
-// TODO: Write a default prompt in prompt.rs instead
-fn prompt_for_remote_url() -> Result<Option<String>> {
-    print!("Remote URL: ");
-    std::io::stdout().flush()?;
-
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input)?;
-    let input = input.trim().to_string();
-
-    if input.is_empty() {
-        return Ok(None);
-    }
-    
-    Ok(Some(input))
 }

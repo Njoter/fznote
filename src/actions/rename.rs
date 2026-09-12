@@ -1,6 +1,6 @@
-use std::{fs::rename, io::Write, path::{Path, PathBuf}};
+use std::{fs::rename, path::Path};
 
-use crate::{config::Config, fzf};
+use crate::{config::Config, fzf, utils::prompt};
 use anyhow::Result;
 
 // TODO: Figure out what to do about file extensions
@@ -35,7 +35,7 @@ pub fn execute(config: &Config, search: bool) -> Result<()> {
 
                     println!("Note renamed: {} -> {}", old_name, new_name);
                 },
-                None => println!("Rename cancelled: no new name given."),
+                None => println!("Rename cancelled: no new name provided."),
             };
         },
         None => println!("No file selected.")
@@ -44,26 +44,19 @@ pub fn execute(config: &Config, search: bool) -> Result<()> {
     Ok(())
 }
 
-fn prompt_for_name(directory: &PathBuf) -> Result<Option<String>> {
+fn prompt_for_name(directory: &Path) -> Result<Option<String>> {
     loop {
-        print!("New name: ");
-        std::io::stdout().flush()?;
-
-        let mut input = String::new();
-        std::io::stdin().read_line(&mut input)?;
-        let input = input.trim();
-
-        if input.is_empty() {
+        let Some(name) = prompt::for_string("New name: ")? else {
             return Ok(None);
-        }
+        };
 
-        let path = directory.join(input);
-
+        let path = directory.join(&name);
         if path.exists() {
             println!("File already exists: {}", path.display());
-        } else {
-            return Ok(Some(input.to_owned()));
+            continue;
         }
+
+        return Ok(Some(name));
     }
 }
 

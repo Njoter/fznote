@@ -28,3 +28,18 @@ pub fn confirm(message: &str, cancel_msg: &str) -> Result<bool> {
         }
     }
 }
+
+pub fn for_string(message: &str) -> Result<Option<String>> {
+    print!("{}", message);
+    std::io::stdout().flush()?;
+
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+    let input = input.trim().to_string();
+
+    if input.is_empty() {
+        return Ok(None);
+    }
+    
+    Ok(Some(input))
+}
