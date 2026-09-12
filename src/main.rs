@@ -7,6 +7,7 @@ mod config;
 mod actions;
 mod fzf;
 mod utils;
+mod git;
 
 #[derive(Parser)]
 #[command(name = "fznote")]
@@ -49,6 +50,10 @@ enum Action {
         #[command(subcommand)]
         action: Option<BookAction>,
     },
+    Sync {
+        #[command(subcommand)]
+        action: Option<SyncAction>,
+    }
 }
 
 #[derive(Subcommand)]
@@ -61,6 +66,17 @@ enum BookAction {
     },
     Switch {
         name: String,
+    }
+}
+
+#[derive(Subcommand)]
+enum SyncAction {
+    Setup {},
+    Push {
+        // TODO
+    },
+    Pull {
+        // TODO
     }
 }
 
@@ -95,6 +111,14 @@ fn main() -> Result<()> {
                 },
 
                 None => actions::books::list(&config)?,
+            }
+        },
+        Some(Action::Sync { action }) => {
+            match action {
+                Some(SyncAction::Setup  {  }) => actions::sync::setup(&config)?,
+                Some(SyncAction::Push   {  }) => {},
+                Some(SyncAction::Pull   {  }) => {},
+                None => actions::sync::status(&config)?,
             }
         }
 

@@ -6,6 +6,7 @@ mod edit;
 mod path;
 mod rename;
 pub mod books;
+pub mod sync;
 
 pub use add::execute as add;
 pub use print::execute as print;
