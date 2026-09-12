@@ -1,8 +1,9 @@
-use std::path::Path;
+use std::{fs, path::Path};
 
 use crate::config::Config;
-use anyhow::Result;
+use anyhow::{Context, Result};
 
+// TODO: Switch to new book when created
 pub fn execute(config: &Config, name: &str) -> Result<()> {
     let path = config.directory.join(name);
 
@@ -11,12 +12,21 @@ pub fn execute(config: &Config, name: &str) -> Result<()> {
     }
 
     create_book(&path)?;
+    println!("Created book: {}", name);
 
     Ok(())
 }
 
-fn create_book(path: &Path) -> Result<()> {
-    std::fs::create_dir(path)?;
-    println!("Created book: '{}'", path.display());
+fn create_book(book_dir: &Path) -> Result<()> {
+    let gitkeep = book_dir.join(".gitkeep");
+
+    fs::create_dir_all(&book_dir)
+        .with_context(|| format!("Failed to create book directory: {}", book_dir.display()))?;
+
+    if let Err(e) = fs::write(&gitkeep, "") {
+        let _ = fs::remove_dir_all(&book_dir);
+        return Err(e).with_context(|| format!("Failed to create: {}", gitkeep.display()));
+    }
+
     Ok(())
 }

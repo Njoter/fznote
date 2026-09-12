@@ -33,8 +33,8 @@ fn get_books(dir: &PathBuf) -> Result<Vec<String>> {
         let path = entry?.path();
 
         if path.is_dir() {
-            if let Some(name) = path.file_name() {
-                if let Some(name) = name.to_str() {
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                if !name.starts_with(".") {
                     books.push(name.to_string());
                 }
             }

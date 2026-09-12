@@ -50,7 +50,6 @@ pub fn changed_paths(repository: &Repository) -> Result<Vec<String>, git2::Error
     Ok(paths)
 }
 
-// TODO: It doesn't commit the books if they are empty. 
 pub fn commit_all(repository: &Repository, message: &str) -> Result<()> {
     // Add to index (stage)
     let mut index = repository.index()?;

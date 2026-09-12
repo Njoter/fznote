@@ -109,8 +109,9 @@ fn main() -> Result<()> {
                 Some(BookAction::Delete { name }) => actions::books::delete(&config, &name)?,
                 Some(BookAction::Switch { name }) => {
                     let book_name = actions::books::switch(&config, &name)?;
-                    config.current_book = book_name;
+                    config.current_book = book_name.clone();
                     config.save()?;
+                    println!("Switched to book: {}", book_name);
                 },
 
                 None => actions::books::list(&config)?,

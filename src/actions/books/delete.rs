@@ -1,6 +1,7 @@
 use crate::{config::Config, utils::confirm};
 use anyhow::Result;
 
+// TODO: What if dir not empty
 pub fn execute(config: &Config, name: &str) -> Result<()> {
     if name == config.current_book {
         anyhow::bail!("Cannot delete current book '{}'. Please move to another book first.", name);
