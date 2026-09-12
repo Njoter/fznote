@@ -119,7 +119,7 @@ fn main() -> Result<()> {
         Some(Action::Sync { action }) => {
             match action {
                 Some(SyncAction::Setup  { force }) => actions::sync::setup(&config, force)?,
-                Some(SyncAction::Push   {  }) => {},
+                Some(SyncAction::Push   {  }) => actions::sync::push(&config)?,
                 Some(SyncAction::Pull   {  }) => {},
                 None => actions::sync::status(&config)?,
             }
