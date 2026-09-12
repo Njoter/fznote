@@ -1,5 +1,5 @@
-mod confirm;
+mod prompt;
 mod commands;
 
-pub use confirm::confirm;
+pub use prompt::confirm;
 pub use commands::run_command;

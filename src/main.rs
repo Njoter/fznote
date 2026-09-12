@@ -41,6 +41,10 @@ enum Action {
         #[arg(short = 's', long)]
         search: bool,
     },
+    Rename {
+        #[arg(short = 's', long)]
+        search: bool,
+    }
     Books {
         #[command(subcommand)]
         action: Option<BookAction>,
@@ -79,6 +83,14 @@ fn main() -> Result<()> {
         Some(Action::Delete { search }) => actions::delete(&config, search)?,
         Some(Action::Edit   { search }) => actions::edit(&config, search)?,
         Some(Action::Path   { search }) => actions::path(&config, search)?,
+        Some(Action::Rename { search }) => {
+            match actions::rename(&config, search)? {
+                Some(path) => {
+
+                },
+                None => println!("No file selected.")
+            }
+        }
         Some(Action::Books  { action }) => {
             match action {
                 Some(BookAction::New    { name }) => actions::books::new(&config, &name)?,
