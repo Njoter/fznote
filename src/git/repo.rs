@@ -15,3 +15,16 @@ pub fn open_or_init(path: &Path) -> Result<Repository, git2::Error> {
         Repository::init(path)
     }
 }
+
+pub fn open_if_repo(path: &Path) -> Option<Repository> {
+    if !is_repo(path) {
+        return None;
+    }
+    Repository::open(path).ok()
+}
+
+pub fn origin_url(repository: &Repository) -> Option<String> {
+    let remote = repository.find_remote("origin").ok()?;
+    let url = remote.url().ok()?;
+    Some(url.to_string())
+}

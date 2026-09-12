@@ -17,6 +17,7 @@ pub fn execute(config: &Config, force: bool) -> Result<()> {
     }
 
     println!("Configuring git sync for {}.", config.directory.display());
+    println!();
     println!("Enter a remote URL to sync your notes with.");
     println!("(e.g. git@github.com:user/notes.git)");
     println!();
