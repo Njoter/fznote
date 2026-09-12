@@ -71,7 +71,10 @@ enum BookAction {
 
 #[derive(Subcommand)]
 enum SyncAction {
-    Setup {},
+    Setup {
+        #[arg(short = 'f', long)]
+        force: bool,
+    },
     Push {
         // TODO
     },
@@ -115,7 +118,7 @@ fn main() -> Result<()> {
         },
         Some(Action::Sync { action }) => {
             match action {
-                Some(SyncAction::Setup  {  }) => actions::sync::setup(&config)?,
+                Some(SyncAction::Setup  { force }) => actions::sync::setup(&config, force)?,
                 Some(SyncAction::Push   {  }) => {},
                 Some(SyncAction::Pull   {  }) => {},
                 None => actions::sync::status(&config)?,
