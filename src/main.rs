@@ -105,7 +105,12 @@ fn main() -> Result<()> {
         Some(Action::Rename { search }) => actions::rename(&config, search)?,
         Some(Action::Books  { action }) => {
             match action {
-                Some(BookAction::New    { name }) => actions::books::new(&config, &name)?,
+                Some(BookAction::New    { name }) => {
+                    let new_book = actions::books::new(&config, &name)?;
+                    config.current_book = new_book.clone();
+                    config.save()?;
+                    println!("Switched to book: {}", new_book);
+                },
                 Some(BookAction::Delete { name }) => actions::books::delete(&config, &name)?,
                 Some(BookAction::Switch { name }) => {
                     let book_name = actions::books::switch(&config, &name)?;

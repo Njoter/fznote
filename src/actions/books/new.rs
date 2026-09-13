@@ -3,8 +3,7 @@ use std::{fs, path::Path};
 use crate::config::Config;
 use anyhow::{Context, Result};
 
-// TODO: Switch to new book when created
-pub fn execute(config: &Config, name: &str) -> Result<()> {
+pub fn execute(config: &Config, name: &str) -> Result<String> {
     let path = config.directory.join(name);
 
     if path.exists() {
@@ -14,10 +13,11 @@ pub fn execute(config: &Config, name: &str) -> Result<()> {
     create_book(&path)?;
     println!("Created book: {}", name);
 
-    Ok(())
+    Ok(name.to_owned())
 }
 
 fn create_book(book_dir: &Path) -> Result<()> {
+    // Create a .gitkeep in the new directory so that it gets added in git
     let gitkeep = book_dir.join(".gitkeep");
 
     fs::create_dir_all(&book_dir)
