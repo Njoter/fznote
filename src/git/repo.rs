@@ -1,6 +1,7 @@
 use std::path::Path;
-use anyhow::Result;
-use git2::{Repository, Signature};
+use anyhow::{Context, Result};
+use auth_git2::GitAuthenticator;
+use git2::{FetchOptions, RemoteCallbacks, Repository, Signature};
 
 pub fn is_repo(path: &Path) -> bool {
     path.join(".git").exists()
@@ -95,4 +96,50 @@ pub fn push_origin(repository: &Repository) -> Result<()> {
 
     remote.push(&[&refspec], Some(&mut options))?;
     Ok(())
+}
+
+pub fn pull_origin(repository: &Repository) -> Result<()> {
+    // 1. Fetch
+    let mut remote = repository.find_remote("origin")
+        .context("No remote named 'origin'")?;
+
+    let auth = GitAuthenticator::default();
+    let git_config = git2::Config::open_default()?;
+
+    let mut callbacks = RemoteCallbacks::new();
+    callbacks.credentials(auth.credentials(&git_config));
+
+    let mut fetch_opts = FetchOptions::new();
+    fetch_opts.remote_callbacks(callbacks);
+
+    remote.fetch(&["main"], Some(&mut fetch_opts), None)?;
+
+    // 2. Find the fetched commit
+    let fetch_head = repository.find_reference("refs/remotes/origin/main")?;
+    let fetch_commit = repository.reference_to_annotated_commit(&fetch_head)?;
+
+    // 3. Unborn branch: just set main and check out
+    if repository.head().is_err() {
+        let refname = "refs/heads/main";
+        repository.reference(refname, fetch_commit.id(), true, "fznote: initial pull")?;
+        repository.set_head(refname)?;
+        repository.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        return Ok(());
+    }
+
+    // 4. Normal case: check for fast-forward
+    let head_commit = repository.head()?.peel_to_commit()?;
+
+    if repository.graph_descendant_of(fetch_commit.id(), head_commit.id())? {
+        repository.reference("refs/heads/main", fetch_commit.id(), true, "fznote: fast-forward")?;
+        repository.checkout_head(Some(git2::build::CheckoutBuilder::new().force()))?;
+        return Ok(());
+    }
+
+    // 5. Divergence: bail with instructions
+    anyhow::bail!(
+        "Local and remote notes have diverged.\n\
+         Run `git pull --rebase origin main` in {} to resolve.",
+        repository.workdir().unwrap_or(Path::new(".")).display()
+    );
 }
