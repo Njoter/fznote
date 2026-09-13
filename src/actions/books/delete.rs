@@ -34,7 +34,7 @@ pub fn execute(config: &Config, name: &str) -> Result<()> {
     let message = if file_count == 0 && dir_count == 0 {
         "Delete the book?"
     } else {
-        "Delete the book and all its content?"
+        "Delete the book and all its contents?"
     };
 
     if confirm(&message, "Deletion cancelled.")? {
