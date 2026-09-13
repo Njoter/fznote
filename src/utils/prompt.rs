@@ -24,6 +24,7 @@ pub fn confirm(message: &str, cancel_msg: &str) -> Result<bool> {
             }
             _ => {
                 println!("Invalid input. Please enter 'y' or 'n'.");
+                println!()
             }
         }
     }

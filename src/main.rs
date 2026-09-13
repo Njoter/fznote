@@ -75,12 +75,8 @@ enum SyncAction {
         #[arg(short = 'f', long)]
         force: bool,
     },
-    Push {
-        // TODO
-    },
-    Pull {
-        // TODO
-    }
+    Push,
+    Pull,
 }
 
 fn main() -> Result<()> {

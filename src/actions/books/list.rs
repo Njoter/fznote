@@ -1,10 +1,8 @@
-use std::{fs, path::PathBuf};
-
-use crate::config::Config;
+use crate::{config::Config, utils::filesystem};
 use anyhow::Result;
 
 pub fn execute(config: &Config) -> Result<()> {
-    let books = get_books(&config.directory)?;
+    let books = filesystem::get_directories_not_hidden(&config.directory)?;
 
     if books.is_empty() {
         println!("📚 No books found.");
@@ -23,24 +21,4 @@ pub fn execute(config: &Config) -> Result<()> {
     }
 
     Ok(())
-}
-
-fn get_books(dir: &PathBuf) -> Result<Vec<String>> {
-    let mut books = Vec::new();
-    let entries = fs::read_dir(dir)?;
-
-    for entry in entries {
-        let path = entry?.path();
-
-        if path.is_dir() {
-            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                if !name.starts_with(".") {
-                    books.push(name.to_string());
-                }
-            }
-        }
-    }
-
-    books.sort();
-    Ok(books)
 }

@@ -1,9 +1,10 @@
-use std::{fs, io::Write, path::PathBuf, process::{Command, Stdio}};
+use std::{io::Write, path::PathBuf, process::{Command, Stdio}};
 use anyhow::Result;
+use crate::utils::filesystem;
 
 pub fn select_file(dir: &PathBuf, book: &str, preview_reader: &str) -> Result<Option<PathBuf>> {
     let book_path = dir.join(book);
-    let filenames = get_filenames(&book_path)?;
+    let filenames = filesystem::get_files_not_hidden(&book_path)?;
     let input = filenames.join("\n");
     let preview_cmd = build_preview_cmd(preview_reader, &book_path);
 
@@ -79,26 +80,6 @@ pub fn select_from_content_search(dir: &PathBuf, book: &str, preview_reader: &st
     }
 
     Ok(None)
-}
-
-fn get_filenames(dir: &PathBuf) -> Result<Vec<String>> {
-    let mut filenames = Vec::new();
-    let entries = fs::read_dir(dir)?;
-
-    for entry in entries {
-        let path = entry?.path();
-
-        if path.is_file() {
-            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                if !name.starts_with('.') {
-                    filenames.push(name.to_string());
-                }
-            }
-        }
-    }
-
-    filenames.sort();
-    Ok(filenames)
 }
 
 fn build_preview_cmd(reader: &str, dir: &PathBuf) -> String {
