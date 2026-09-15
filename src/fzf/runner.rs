@@ -82,6 +82,39 @@ pub fn select_from_content_search(dir: &PathBuf, book: &str, preview_reader: &st
     Ok(None)
 }
 
+pub fn select_book(dir: &PathBuf) -> Result<Option<String>> {
+    let books = filesystem::get_directories_not_hidden(dir)?;
+
+    if books.is_empty() {
+        return Ok(None);
+    }
+
+    let input = books.join("\n");
+
+    let mut child = Command::new("fzf")
+        .arg("--layout=reverse")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()?;
+
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin.write_all(input.as_bytes())?;
+        stdin.flush()?;
+    }
+
+    let output = child.wait_with_output()?;
+
+    if output.status.success() {
+        let selected = String::from_utf8(output.stdout)?;
+        let selected = selected.trim();
+        if !selected.is_empty() {
+            return Ok(Some(selected.to_string()));
+        }
+    }
+
+    Ok(None)
+}
+
 fn build_preview_cmd(reader: &str, dir: &PathBuf) -> String {
     let dir_string = dir.display();
 

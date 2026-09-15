@@ -1,21 +1,23 @@
 use anyhow::Result;
-use crate::{config::Config, git::repo};
+use crate::{config::Config, git::repo, utils::printer};
 
 
 pub fn execute(config: &Config) -> Result<()> {
-    let Some(repository) = repo::open_if_repo(&config.directory) else {
+    let path = &config.directory;
+
+    if !repo::is_repo(path) {
+        println!("Sync not set up. Run `fznote sync setup`.");
+        return Ok(());
+    }
+
+    let Some(url) = repo::origin_url(path) else {
         println!("Sync not set up. Run `fznote sync setup`.");
         return Ok(());
     };
 
-    let Some(url) = repo::origin_url(&repository) else {
-        println!("Sync not set up. Run `fznote sync setup`.");
-        return Ok(());
-    };
+    printer::header(&format!("Pulling from {}", url));
 
-    println!("Pulling from {} ...", url);
-    repo::pull_origin(&repository)?;
-    println!("Done. Your notes are up to date.");
+    repo::pull_origin(path)?;
 
     Ok(())
 }

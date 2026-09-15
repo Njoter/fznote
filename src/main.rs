@@ -64,9 +64,7 @@ enum BookAction {
     Delete {
         name: String,
     },
-    Switch {
-        name: String,
-    }
+    Switch,
 }
 
 #[derive(Subcommand)]
@@ -75,7 +73,10 @@ enum SyncAction {
         #[arg(short = 'f', long)]
         force: bool,
     },
-    Push,
+    Push {
+        #[arg(short = 'm')]
+        message: Option<String>,
+    },
     Pull,
 }
 
@@ -108,8 +109,11 @@ fn main() -> Result<()> {
                     println!("Switched to book: {}", new_book);
                 },
                 Some(BookAction::Delete { name }) => actions::books::delete(&config, &name)?,
-                Some(BookAction::Switch { name }) => {
-                    let book_name = actions::books::switch(&config, &name)?;
+                Some(BookAction::Switch {      }) => {
+                    let book_name = match actions::books::switch(&config)? {
+                        Some(name) => name,
+                        None => return Ok(()),
+                    };
                     config.current_book = book_name.clone();
                     config.save()?;
                     println!("Switched to book: {}", book_name);
@@ -120,9 +124,9 @@ fn main() -> Result<()> {
         },
         Some(Action::Sync { action }) => {
             match action {
-                Some(SyncAction::Setup  { force }) => actions::sync::setup(&config, force)?,
-                Some(SyncAction::Push   {  }) => actions::sync::push(&config)?,
-                Some(SyncAction::Pull   {  }) => actions::sync::pull(&config)?,
+                Some(SyncAction::Setup  { force })      => actions::sync::setup(&config, force)?,
+                Some(SyncAction::Push   { message })    => actions::sync::push(&config, message)?,
+                Some(SyncAction::Pull   {  })           => actions::sync::pull(&config)?,
                 None => actions::sync::status(&config)?,
             }
         }

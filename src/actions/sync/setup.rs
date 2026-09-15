@@ -2,21 +2,23 @@ use anyhow::Result;
 use crate::{config::Config, git::repo, utils::prompt};
 
 pub fn execute(config: &Config, force: bool) -> Result<()> {
-    let repository = repo::open_or_init(&config.directory)?;
+    let path = &config.directory;
 
-    if !force {
-        // Check if repo already has a remote with a URL
-        if let Ok(remote) = repository.find_remote("origin") {
-            if let Ok(url) = remote.url() {
-                println!("Remote is already set up at {}.", url);
-                println!();
-                println!("Use `fznote sync setup --force` to change it.");
-                return Ok(());
-            }
+    repo::init_if_not_repo(path)?;
+
+    if let Some(url) = repo::origin_url(path) {
+        if force {
+            println!("Current remote: {}", url);
+            println!();
+        } else {
+            println!("Remote is already set up at {}.", url);
+            println!();
+            println!("Use `fznote sync setup --force` to change it.");
+            return Ok(());
         }
     }
 
-    println!("Configuring git sync for {}.", config.directory.display());
+    println!("Configuring git sync for {}.", path.display());
     println!();
     println!("Enter a remote URL to sync your notes with.");
     println!("(e.g. git@github.com:user/notes.git)");
@@ -27,8 +29,7 @@ pub fn execute(config: &Config, force: bool) -> Result<()> {
         return Ok(());
     };
 
-    let _ = repository.remote_delete("origin");
-    repository.remote("origin", &url)?;
+    repo::set_remote(path, &url)?;
 
     println!("Sync remote set to {}.", url);
     println!();

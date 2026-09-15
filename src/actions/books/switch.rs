@@ -1,12 +1,9 @@
 use anyhow::Result;
-use crate::config::Config;
+use crate::{config::Config, fzf};
 
-pub fn execute(config: &Config, name: &str) -> Result<String> {
-    // Check if the book exists
-    let book_path = config.directory.join(name);
-    if !book_path.exists() {
-        anyhow::bail!("Book '{}' does not exist.", name);
+pub fn execute(config: &Config) -> Result<Option<String>> {
+    match fzf::select_book(&config.directory)? {
+        Some(name) => Ok(Some(name)),
+        None => Ok(None),
     }
-
-    Ok(name.to_string())
 }

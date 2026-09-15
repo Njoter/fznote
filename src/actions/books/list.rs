@@ -1,17 +1,20 @@
-use crate::{config::Config, utils::filesystem};
+use crate::{config::Config, utils::{filesystem}};
 use anyhow::Result;
 
 pub fn execute(config: &Config) -> Result<()> {
     let books = filesystem::get_directories_not_hidden(&config.directory)?;
 
     if books.is_empty() {
-        println!("📚 No books found.");
-        println!("   Create one with: fznote book add <name>");
+        println!("No books found.");
+        println!("Create one with: fznote book add <name>");
         return Ok(());
     }
 
-    println!("Books");
-    println!("-------------------------------------------------");
+    println!();
+    let header = "Books";
+    println!("{}", header);
+    println!("{}", "─".repeat(header.len() * 2));
+
     for book in books {
         if book == config.current_book {
             println!("[x] | {}", book);
