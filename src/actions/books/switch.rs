@@ -1,16 +1,9 @@
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use crate::{config::Config, fzf};
 
-pub fn execute(mut config: Config) -> Result<()> {
+pub fn execute(config: &Config) -> Result<Option<String>> {
     match fzf::select_book(&config.directory)? {
-        Some(book) => {
-            config.current_book = book.clone();
-            println!("Switched to book: {}", &book);
-            return Ok(());
-        },
-        None => {
-            println!("No book selected.");
-            return Ok(());
-        }
+        Some(name) => Ok(Some(name)),
+        None => Ok(None),
     }
 }
