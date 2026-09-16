@@ -1,16 +1,25 @@
-use crate::{config::Config, utils::{confirm, filesystem}};
-use anyhow::Result;
+use crate::{config::Config, fzf::{self}, utils::{confirm, filesystem}};
+use anyhow::{Result, bail};
 
 // TODO: This should obviously use fzf selection instead of taking the name from input
-pub fn execute(config: &Config, name: &str) -> Result<()> {
-    if name == config.current_book {
-        anyhow::bail!("Cannot delete current book '{}'. Please move to another book first.", name);
+pub fn execute(config: &Config) -> Result<()> {
+    let selected = match fzf::select_book(&config.directory)? {
+        Some(book) => Some(book),
+        None => {
+            println!("No book selected.");
+            return Ok(())
+        }
+    };
+
+    let book = selected.unwrap();
+
+    if book == config.current_book {
+        anyhow::bail!("Cannot delete current book '{}'. Please move to another book first.", book);
     }
 
-    let path = config.directory.join(name);
+    let path = config.directory.join(&book);
     if !path.exists() {
-        println!("No such book: {}", name);
-        return Ok(());
+        bail!("No such book: {}", book);
     }
 
     // Count the files (excluding the .gitkeep)
@@ -23,7 +32,8 @@ pub fn execute(config: &Config, name: &str) -> Result<()> {
     let directories = filesystem::get_directories_with_hidden(&path)?;
     let dir_count = directories.len();
 
-    println!("Book '{}' contains {} notes.", name, file_count);
+    println!();
+    println!("Book '{}' contains {} notes.", book, file_count);
     if dir_count == 1 {
         println!("The book contains 1 directory, for some reason.");
     } else if dir_count > 1 {
@@ -39,7 +49,7 @@ pub fn execute(config: &Config, name: &str) -> Result<()> {
 
     if confirm(&message, "Deletion cancelled.")? {
         std::fs::remove_dir_all(&path)?;
-        println!("Book deleted: {}", name);
+        println!("Book deleted: {}", book);
     }
 
     Ok(())

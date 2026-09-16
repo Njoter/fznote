@@ -61,9 +61,7 @@ enum BookAction {
     New {
         name: String,
     },
-    Delete {
-        name: String,
-    },
+    Delete,
     Switch,
 }
 
@@ -94,22 +92,24 @@ fn main() -> Result<()> {
 
     // Execute action or default to print
     match cli.action {
-        Some(Action::Add    { name, extension }) => actions::add(&config, &name, extension)?,
-        Some(Action::Read   { search }) => actions::read(&config, search)?,
-        Some(Action::Delete { search }) => actions::delete(&config, search)?,
-        Some(Action::Edit   { search }) => actions::edit(&config, search)?,
-        Some(Action::Path   { search }) => actions::path(&config, search)?,
-        Some(Action::Rename { search }) => actions::rename(&config, search)?,
+        Some(Action::Add    { name, extension })    => actions::add(&config, &name, extension)?,
+        Some(Action::Read   { search })             => actions::read(&config, search)?,
+        Some(Action::Delete { search })             => actions::delete(&config, search)?,
+        Some(Action::Edit   { search })             => actions::edit(&config, search)?,
+        Some(Action::Path   { search })             => actions::path(&config, search)?,
+        Some(Action::Rename { search })             => actions::rename(&config, search)?,
+
+        // Books
         Some(Action::Books  { action }) => {
             match action {
-                Some(BookAction::New    { name }) => {
+                Some(BookAction::Delete { })        => actions::books::delete(&config)?,
+                Some(BookAction::New    { name })   => {
                     let new_book = actions::books::new(&config, &name)?;
                     config.current_book = new_book.clone();
                     config.save()?;
                     println!("Switched to book: {}", new_book);
                 },
-                Some(BookAction::Delete { name }) => actions::books::delete(&config, &name)?,
-                Some(BookAction::Switch {      }) => {
+                Some(BookAction::Switch { })        => {
                     let book_name = match actions::books::switch(&config)? {
                         Some(name) => name,
                         None => return Ok(()),
