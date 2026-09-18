@@ -1,5 +1,5 @@
 use std::{path::Path, process::Command};
-use anyhow::{Ok, Result, bail};
+use anyhow::{Ok, Result, bail, anyhow};
 
 pub fn is_repo(path: &Path) -> bool {
     path.join(".git").exists()
@@ -70,6 +70,33 @@ pub fn has_uncommitted_changes(path: &Path)  -> Result<bool> {
     }
 
     Ok(!output.stdout.is_empty())
+}
+
+pub fn ahead_behind(path: &Path) -> Result<(u32, u32)> {
+    let output = Command::new("git")
+        .args(["rev-list", "--left-right", "--count", "HEAD...origin/HEAD"])
+        .current_dir(path)
+        .output()?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("git rev-list failed: {}", stderr.trim());
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut parts = stdout.split_whitespace();
+
+    let ahead: u32 = parts
+        .next()
+        .and_then(|s| s.parse().ok())
+        .ok_or_else(|| anyhow!("Unexpected git rev-list output: {:?}", stdout.trim()))?;
+
+    let behind: u32 = parts
+        .next()
+        .and_then(|s| s.parse().ok())
+        .ok_or_else(|| anyhow!("Unexpected git rev-list output: {:?}", stdout.trim()))?;
+
+    Ok((ahead, behind))
 }
 
 pub fn commit_all(path: &Path, message: &str) -> Result<()> {
