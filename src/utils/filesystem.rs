@@ -1,6 +1,7 @@
 use std::{fs, path::Path};
 use anyhow::Result;
 
+// TODO: Sort function sorts capitalized first
 pub fn get_files_not_hidden(directory: &Path) -> Result<Vec<String>> {
     let mut filenames = Vec::new();
     let entries = fs::read_dir(directory)?;
@@ -17,7 +18,7 @@ pub fn get_files_not_hidden(directory: &Path) -> Result<Vec<String>> {
         }
     }
 
-    filenames.sort();
+    filenames.sort_by_key(|s| s.to_lowercase());
     Ok(filenames)
 }
 
@@ -35,7 +36,7 @@ pub fn get_files_with_hidden(directory: &Path) -> Result<Vec<String>> {
         }
     }
 
-    filenames.sort();
+    filenames.sort_by_key(|s| s.to_lowercase());
     Ok(filenames)
 }
 
@@ -55,7 +56,7 @@ pub fn get_directories_not_hidden(directory: &Path) -> Result<Vec<String>> {
         }
     }
 
-    dirs.sort();
+    dirs.sort_by_key(|s| s.to_lowercase());
     Ok(dirs)
 }
 
@@ -73,6 +74,6 @@ pub fn get_directories_with_hidden(directory: &Path) -> Result<Vec<String>> {
         }
     }
 
-    dirs.sort();
+    dirs.sort_by_key(|s| s.to_lowercase());
     Ok(dirs)
 }

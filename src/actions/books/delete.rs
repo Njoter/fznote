@@ -1,7 +1,6 @@
 use crate::{config::Config, fzf::{self}, utils::{confirm, filesystem}};
 use anyhow::{Result, bail};
 
-// TODO: This should obviously use fzf selection instead of taking the name from input
 pub fn execute(config: &Config) -> Result<()> {
     let selected = match fzf::select_book(&config.directory)? {
         Some(book) => Some(book),
