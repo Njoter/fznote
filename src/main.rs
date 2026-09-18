@@ -58,7 +58,7 @@ enum Action {
 
 #[derive(Subcommand)]
 enum BookAction {
-    New {
+    Add {
         name: String,
     },
     Delete,
@@ -103,7 +103,7 @@ fn main() -> Result<()> {
         Some(Action::Books  { action }) => {
             match action {
                 Some(BookAction::Delete { })        => actions::books::delete(&config)?,
-                Some(BookAction::New    { name })   => {
+                Some(BookAction::Add    { name })   => {
                     let new_book = actions::books::new(&config, &name)?;
                     config.current_book = new_book.clone();
                     config.save()?;
