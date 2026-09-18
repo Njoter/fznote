@@ -1,25 +1,26 @@
 use anyhow::Result;
-use crate::{config::Config, git::repo, utils::prompt};
+use crate::{config::Config, git::repo, utils::{printer, prompt}};
 
 pub fn execute(config: &Config, force: bool) -> Result<()> {
     let path = &config.directory;
 
     repo::init_if_not_repo(path)?;
 
-    if let Some(url) = repo::origin_url(path) {
-        if force {
-            println!("Current remote: {}", url);
-            println!();
-        } else {
-            println!("Remote is already set up at {}.", url);
-            println!();
-            println!("Use `fznote sync setup --force` to change it.");
-            return Ok(());
-        }
+    let url = repo::origin_url(path);
+
+    if url.is_some() && !force {
+        println!("Remote is already set up at {}.", url.unwrap());
+        println!();
+        println!("Use `fznote sync setup --force` to change it.");
+        return Ok(());
     }
 
-    println!("Configuring git sync for {}.", path.display());
-    println!();
+    printer::header(&format!("Configuring git sync for {}.", path.display()));
+
+    if url.is_some() {
+        println!("Current remote: {}", url.unwrap());
+        println!();
+    }
     println!("Enter a remote URL to sync your notes with.");
     println!("(e.g. git@github.com:user/notes.git)");
     println!();

@@ -1,7 +1,6 @@
 use std::{fs, path::Path};
 use anyhow::Result;
 
-// TODO: Sort function sorts capitalized first
 pub fn get_files_not_hidden(directory: &Path) -> Result<Vec<String>> {
     let mut filenames = Vec::new();
     let entries = fs::read_dir(directory)?;
