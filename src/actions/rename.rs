@@ -3,7 +3,6 @@ use std::{fs::rename, path::Path};
 use crate::{config::Config, fzf, utils::prompt};
 use anyhow::Result;
 
-// TODO: Figure out what to do about file extensions
 pub fn execute(config: &Config, search: bool) -> Result<()> {
     let selected = if search {
         fzf::select_from_content_search(
@@ -24,7 +23,8 @@ pub fn execute(config: &Config, search: bool) -> Result<()> {
             let current_book_dir = &config.directory.join(&config.current_book);
 
             match prompt_for_name(&current_book_dir)? {
-                Some(new_name) => {
+                Some(name) => {
+                    let new_name = format!("{}.{}", name, &config.file_extension);
                     let new_path = current_book_dir.join(&new_name);
                     rename_file(&note_path, &new_path)?;
 
