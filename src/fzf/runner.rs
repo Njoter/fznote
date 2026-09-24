@@ -55,7 +55,7 @@ pub fn select_from_content_search(dir: &PathBuf, book: &str, preview_reader: &st
     
     // Pipe rg output to fzf
     let fzf_child = Command::new("fzf")
-        //.arg("--layout=reverse")
+        .arg("--layout=reverse")
         .arg("--exact")
         .arg("--delimiter=\t")
         .arg("--with-nth={3}") // Show only content

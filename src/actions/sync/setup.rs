@@ -34,7 +34,7 @@ pub fn execute(config: &Config, force: bool) -> Result<()> {
 
     println!("Sync remote set to {}.", url);
     println!();
-    println!("Run `fznote sync push` to push your notes.");
+    println!("Run `fznote sync` to sync your notes.");
 
     Ok(())
 }

@@ -82,7 +82,6 @@ fn main() -> Result<()> {
     // Check dependencies
     let deps = Dependencies::check();
     deps.ensure_fzf()?;
-    deps.warn_optional();
 
     // Load config
     let mut config = Config::load()?;
@@ -101,7 +100,7 @@ fn main() -> Result<()> {
             match action {
                 Some(BookAction::Delete {  })       => actions::books::delete(&config)?,
                 Some(BookAction::Add    { name })   => {
-                    let new_book = actions::books::new(&config, &name)?;
+                    let new_book = actions::books::add(&config, &name)?;
                     config.current_book = new_book.clone();
                     config.save()?;
                     println!("Switched to book: {}", new_book);

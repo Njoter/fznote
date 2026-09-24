@@ -1,15 +1,15 @@
 pub struct Dependencies {
     fzf: bool,
-    bat: bool,
-    rg: bool,
+    //bat: bool,
+    //rg: bool,
 }
 
 impl Dependencies {
     pub fn check() -> Self {
         Self {
             fzf: which::which("fzf").is_ok(),
-            bat: which::which("bat").is_ok(),
-            rg: which::which("rg").is_ok(),
+            //bat: which::which("bat").is_ok(),
+            //rg: which::which("rg").is_ok(),
         }
     }
 
@@ -20,6 +20,7 @@ impl Dependencies {
         Ok(())
     }
 
+    /*
     pub fn warn_optional(&self) {
         if !self.bat {
             eprintln!("bat not found. Install for better syntax highlighting.");
@@ -28,4 +29,5 @@ impl Dependencies {
             eprintln!("ripgrep not found. Install for content search.");
         }
     }
+    */
 }
