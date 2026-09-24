@@ -1,7 +1,7 @@
 use super::defaults;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
-use anyhow::Result;
+use anyhow::{Result, bail};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -20,9 +20,9 @@ pub struct Config {
 }
 
 fn config_directory() -> PathBuf {
-    dirs::home_dir()
+    dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join(".config/fznote")
+        .join("fznote")
 }
 
 fn config_file_path() -> PathBuf {
@@ -71,10 +71,14 @@ impl Config {
             default_config
         };
 
+        if config.current_book.is_empty() {
+            bail!("Config error: current_book is empty.");
+        }
+
         // Create book directory if it doesn't exist
         let book_path = config.directory.join(&config.current_book);
         if !book_path.exists() {
-        println!("Creating book: {}", config.current_book);
+            println!("Creating book: {}", config.current_book);
             std::fs::create_dir_all(&book_path)?;
         }
 
@@ -82,6 +86,10 @@ impl Config {
     }
 
     pub fn save(&self) -> Result<()> {
+        let config_dir = config_directory();
+        if !config_dir.exists() {
+            bail!("Config directory doesn't exist: {}", config_dir.display());
+        }
         let config_path = config_file_path();
         let yaml = serde_yaml::to_string(&self)?;
         std::fs::write(&config_path, yaml)?;
