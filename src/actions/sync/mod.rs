@@ -1,9 +1,7 @@
 mod status;
 mod setup;
-mod push;
-mod pull;
+mod sync;
 
 pub use status::execute as status;
 pub use setup::execute as setup;
-pub use push::execute as push;
-pub use pull::execute as pull;
+pub use sync::execute as sync;

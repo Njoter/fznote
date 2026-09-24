@@ -72,11 +72,7 @@ enum SyncAction {
         #[arg(short = 'f', long)]
         force: bool,
     },
-    Push {
-        #[arg(short = 'm')]
-        message: Option<String>,
-    },
-    Pull,
+    Status,
 }
 
 fn main() -> Result<()> {
@@ -134,9 +130,8 @@ fn main() -> Result<()> {
         Some(Action::Sync { action }) => {
             match action {
                 Some(SyncAction::Setup  { force })      => actions::sync::setup(&config, force)?,
-                Some(SyncAction::Push   { message })    => actions::sync::push(&config, message)?,
-                Some(SyncAction::Pull   {  })           => actions::sync::pull(&config)?,
-                None => actions::sync::status(&config)?,
+                Some(SyncAction::Status {  })           => actions::sync::status(&config)?,
+                None => actions::sync::sync(&config)?,
             }
         }
 

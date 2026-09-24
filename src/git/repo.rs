@@ -72,6 +72,19 @@ pub fn has_uncommitted_changes(path: &Path)  -> Result<bool> {
     Ok(!output.stdout.is_empty())
 }
 
+pub fn fetch(path: &Path) -> Result<()> {
+    let status = Command::new("git")
+        .arg("fetch")
+        .current_dir(path)
+        .status()?;
+
+    if !status.success() {
+        bail!("Git fethc failed.")
+    }
+
+    Ok(())
+}
+
 pub fn ahead_behind(path: &Path) -> Result<(u32, u32)> {
     let output = Command::new("git")
         .args(["rev-list", "--left-right", "--count", "HEAD...origin/HEAD"])
