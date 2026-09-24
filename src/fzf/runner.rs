@@ -82,6 +82,7 @@ pub fn select_from_content_search(dir: &PathBuf, book: &str, preview_reader: &st
     Ok(None)
 }
 
+// TODO: Preview books contents with fd
 pub fn select_book(dir: &PathBuf) -> Result<Option<String>> {
     let books = filesystem::get_directories_not_hidden(dir)?;
 

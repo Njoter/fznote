@@ -66,7 +66,8 @@ pub fn has_uncommitted_changes(path: &Path)  -> Result<bool> {
         .output()?;
 
     if !output.status.success() {
-        bail!("Git status failed.")
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("Git status failed: {}", stderr.trim());
     }
 
     Ok(!output.stdout.is_empty())
@@ -79,7 +80,7 @@ pub fn fetch(path: &Path) -> Result<()> {
         .status()?;
 
     if !status.success() {
-        bail!("Git fethc failed.")
+        bail!("Git fetch failed.")
     }
 
     Ok(())
