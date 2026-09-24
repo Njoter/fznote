@@ -1,9 +1,13 @@
 use std::path::Path;
 
-use crate::{config::Config, utils::run_command};
-use anyhow::Result;
+use crate::{config::Config, utils::{filesystem, run_command}};
+use anyhow::{Result, bail};
 
 pub fn execute(config: &Config, name: &str, extension: Option<String>) -> Result<()> {
+    if name.is_empty() {
+        bail!("Name cannot be empty.");
+    }
+
     let ext = extension
         .as_deref()
         .unwrap_or(&config.file_extension)
@@ -11,12 +15,15 @@ pub fn execute(config: &Config, name: &str, extension: Option<String>) -> Result
 
     let filename = format!("{}.{}", name, ext);
 
-    let path = config.directory
-        .join(&config.current_book)
-        .join(&filename);
+    if !filesystem::is_valid_filename(&filename) {
+        bail!("'{}' contains invalid characters.", filename);
+    }
 
-    if path.exists() {
-        anyhow::bail!("Note '{}' already exists", filename);
+    let dir = config.directory.join(&config.current_book);
+    let path = dir.join(&filename);
+
+    if filesystem::exists_case_aware(&dir, &filename)? {
+        bail!("Note '{}' already exists.", filename);
     }
 
     create_file(&path)?;
@@ -27,6 +34,6 @@ pub fn execute(config: &Config, name: &str, extension: Option<String>) -> Result
 
 fn create_file(path: &Path) -> Result<()> {
     std::fs::File::create(path)?;
-    println!("Created file: '{}'", path.display());
+    println!("Created file: '{}'.", path.display());
     Ok(())
 }

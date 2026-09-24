@@ -1,7 +1,8 @@
-use std::{fs::rename, path::Path};
-
-use crate::{config::Config, fzf, utils::prompt};
+use std::path::Path;
+use std::fs::rename;
 use anyhow::Result;
+
+use crate::{config::Config, fzf, utils::{filesystem, prompt}};
 
 pub fn execute(config: &Config, search: bool) -> Result<()> {
     let selected = if search {
@@ -18,45 +19,50 @@ pub fn execute(config: &Config, search: bool) -> Result<()> {
         )?
     };
 
-    match selected {
-        Some(note_path) => {
-            let current_book_dir = &config.directory.join(&config.current_book);
-
-            match prompt_for_name(&current_book_dir)? {
-                Some(name) => {
-                    let new_name = format!("{}.{}", name, &config.file_extension);
-                    let new_path = current_book_dir.join(&new_name);
-                    rename_file(&note_path, &new_path)?;
-
-                    let old_name = match note_path.file_name() {
-                        Some(name) => name.to_string_lossy().into_owned(),
-                        None => note_path.to_string_lossy().into_owned(),
-                    };
-
-                    println!("Note renamed: {} -> {}", old_name, new_name);
-                },
-                None => println!("Rename cancelled: no new name provided."),
-            };
-        },
-        None => println!("No file selected.")
+    let Some(note_path) = selected else {
+        println!("No file selected.");
+        return Ok(());
     };
+
+    let current_book_dir = config.directory.join(&config.current_book);
+
+    let Some(new_name) = prompt_for_name(&current_book_dir, &config.file_extension)? else {
+        println!("Rename cancelled: no new name provided.");
+        return Ok(());
+    };
+
+    let new_path = current_book_dir.join(&new_name);
+    rename_file(&note_path, &new_path)?;
+
+    let old_name = note_path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| note_path.to_string_lossy().into_owned());
+
+    println!("Note renamed: {} -> {}", old_name, new_name);
 
     Ok(())
 }
 
-fn prompt_for_name(directory: &Path) -> Result<Option<String>> {
+fn prompt_for_name(directory: &Path, ext: &str) -> Result<Option<String>> {
     loop {
         let Some(name) = prompt::for_string("New name: ")? else {
             return Ok(None);
         };
 
-        let path = directory.join(&name);
-        if path.exists() {
-            println!("File already exists: {}", path.display());
+        let filename = format!("{}.{}", name, ext);
+
+        if !filesystem::is_valid_filename(&filename) {
+            println!("'{}' contains invalid characters.", filename);
             continue;
         }
 
-        return Ok(Some(name));
+        if filesystem::exists_case_aware(directory, &filename)? {
+            println!("A note named '{}' already exists.", filename);
+            continue;
+        }
+
+        return Ok(Some(filename));
     }
 }
 

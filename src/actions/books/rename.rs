@@ -1,5 +1,5 @@
 use std::path::Path;
-use crate::{config::Config, fzf, utils::prompt};
+use crate::{config::Config, fzf, utils::{filesystem, prompt}};
 use anyhow::Result;
 
 pub fn execute(config: &Config) -> Result<Option<(String, String)>> {
@@ -16,7 +16,7 @@ pub fn execute(config: &Config) -> Result<Option<(String, String)>> {
     let old_path = config.directory.join(&book);
     let new_path = config.directory.join(&name);
 
-    rename_directory(&old_path, &new_path)?;
+    std::fs::rename(&old_path, &new_path)?;
     println!("Book renamed: {} -> {}", book, name);
 
     Ok(Some((book, name)))
@@ -28,17 +28,16 @@ fn prompt_for_name(directory: &Path) -> Result<Option<String>> {
             return Ok(None);
         };
 
-        let path = directory.join(&name);
-        if path.exists() {
-            println!("Directory already exists: {}", path.display());
+        if let Err(e) = filesystem::validate_book_name(directory, &name) {
+            println!("{}", e);
+            continue;
+        }
+
+        if filesystem::exists_case_aware(directory, &name)? {
+            println!("A book named '{}' already exists.", name);
             continue;
         }
 
         return Ok(Some(name));
     }
-}
-
-fn rename_directory(old_path: &Path, new_path: &Path) -> Result<()> {
-    std::fs::rename(old_path, new_path)?;
-    Ok(())
 }
