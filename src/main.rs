@@ -63,7 +63,7 @@ enum BookAction {
     },
     Delete,
     Rename,
-    Switch,
+    List,
 }
 
 #[derive(Subcommand)]
@@ -105,15 +105,6 @@ fn main() -> Result<()> {
                     config.save()?;
                     println!("Switched to book: {}", new_book);
                 },
-                Some(BookAction::Switch {  })       => {
-                    let book_name = match actions::books::switch(&config)? {
-                        Some(name) => name,
-                        None => return Ok(()),
-                    };
-                    config.current_book = book_name.clone();
-                    config.save()?;
-                    println!("Switched to book: {}", book_name);
-                },
                 Some(BookAction::Rename {  })       => {
                     if let Some((old, new)) = actions::books::rename(&config)? {
                         if old == config.current_book {
@@ -122,8 +113,17 @@ fn main() -> Result<()> {
                         }
                     }
                 },
+                Some(BookAction::List {  })         => actions::books::list(&config)?,
 
-                None => actions::books::list(&config)?,
+                None => {
+                    let book_name = match actions::books::switch(&config)? {
+                        Some(name) => name,
+                        None => return Ok(()),
+                    };
+                    config.current_book = book_name.clone();
+                    config.save()?;
+                    println!("Switched to book: {}", book_name);
+                },
             }
         },
         Some(Action::Sync { action }) => {
