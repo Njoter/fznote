@@ -18,6 +18,8 @@ pub fn execute(config: &Config) -> Result<()> {
 
     let is_clean = !repo::has_uncommitted_changes(path)?;
 
+    repo::fetch(path)?;
+
     let (ahead, behind) = match repo::ahead_behind(path) {
         Ok(counts) => counts,
         Err(_) => {
