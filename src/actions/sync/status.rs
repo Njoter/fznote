@@ -1,5 +1,5 @@
 use anyhow::Result;
-use crate::{config::Config, git::repo::{self}, utils::printer};
+use crate::{config::Config, git::repo, utils::printer};
 
 pub fn execute(config: &Config) -> Result<()> {
     let path = &config.directory;
@@ -16,41 +16,34 @@ pub fn execute(config: &Config) -> Result<()> {
 
     printer::header(&format!("Sync remote set up at {}", url));
 
-    // TODO: Figure out this whole thing.
-    // Currently, local can't have unpushed commits.
-    // Can't pull if uncommitted changes.
-    // If remote is ahead, push will fail, so it has to pull first.
-    if repo::has_uncommitted_changes(path)? {
-        println!("Status: You have uncommitted changes.");
-        println!();
-        println!("Run `fznote sync push` to push them.");
-    } else {
-        println!("Status: clean");
-        println!();
-        println!("Run `fznote sync pull` to fetch remote changes.");
-    }
+    let is_clean = !repo::has_uncommitted_changes(path)?;
 
-    let (ahead, behind) = repo::ahead_behind(path)?;
+    let (ahead, behind) = match repo::ahead_behind(path) {
+        Ok(counts) => counts,
+        Err(_) => {
+            println!("Status: no remote data yet.");
+            println!();
+            println!("Run `fznote sync` to sync your notes.");
+            return Ok(());
+        }
+    };
 
-    match (ahead, behind) {
-        (0, 0) => {
-            println!("up to date with remote.");
-        }
-        (a, 0) => {
-            println!("{} unpushed commit(s)", a);
-            println!();
-            println!("Run `fznote sync push` to push them.");
-        }
-        (0, b) => {
-            println!("{} unpulled commit(s)", b);
-            println!();
-            println!("Run `fznote sync pull` to fetch them.");
-        }
-        (a, b) => {
-            println!("{} ahead, {} behind", a, b);
-            println!();
-            println!("Run `fznote sync pull` first, then `fznote sync push`.");
-        }
+    let is_up_to_date = ahead == 0 && behind == 0;
+
+    let local = if is_clean { "clean" } else { "uncommitted changes" };
+
+    let remote = match (ahead, behind) {
+        (0, 0) => "up to date".to_string(),
+        (a, 0) => format!("{} commits ahead", a),
+        (0, b) => format!("{} commits behind", b),
+        (a, b) => format!("{} ahead, {} behind", a, b),
+    };
+
+    println!("Status: {}, {}.", local, remote);
+
+    if !(is_clean && is_up_to_date) {
+        println!();
+        println!("Run `fznote sync` to sync your notes.");
     }
 
     Ok(())
