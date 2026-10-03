@@ -72,7 +72,6 @@ enum SyncAction {
         #[arg(short = 'f', long)]
         force: bool,
     },
-    Status,
 }
 
 fn main() -> Result<()> {
@@ -129,7 +128,6 @@ fn main() -> Result<()> {
         Some(Action::Sync { action }) => {
             match action {
                 Some(SyncAction::Setup  { force })      => actions::sync::setup(&config, force)?,
-                Some(SyncAction::Status {  })           => actions::sync::status(&config)?,
                 None => actions::sync::sync(&config)?,
             }
         }
