@@ -1,82 +1,151 @@
 fznote - Fuzzy Note Manager
----------------------------
+===========================
 
-fznote is a lightweight, terminal-based note manager that combines the power
-of fzf with the simplicity of plain text files. Write your notes in any editor,
-find them instantly with fuzzy search, and version control them with git.
+A fuzzy note manager powered by fzf.
 
-**Early Development**: fznote is actively evolving. Features may change,
-and some functionality is still in progress. Contributions and feedback are
-welcome!
+fznote manages plain text notes in a directory of your choosing, synced
+with git. Notes are files; books are directories; sync is git. fznote
+doesn't try to be a note-taking application — it's a thin layer that
+orchestrates the tools you already use into a fast terminal workflow.
+Your notes stay yours, in a format you can read without fznote, and the
+tool stays out of the way.
 
-## Features
+Works on Linux and Windows.
 
-🎯 Fuzzy search - Find any note instantly with fzf
+Features
+--------
 
-📝 Plain text - Your notes are just files. Use any editor, any format
+* Fuzzy note selection with fzf
+* Search through the contents of all your notes with ripgrep
+* Books (directories) for organizing notes
+* Git sync with a single command
+* Plain Markdown files, editable with any editor
 
-🔒 Git-backed - Version control built in (coming soon)
+Requirements
+------------
 
-🎨 Preview and printing with configurable reader
+**Required**
+* fzf - the heart of fznote
+* git - for sync
 
-🔍 Content search - Search through all your notes with ripgrep + fzf
+**Recommended**
+* bat - default reader, for fzf previews and `fznote read`
+* nvim - default editor for writing the notes
+* ripgrep - for `-s` (content search)
 
-🔌 Terminal-native - Works in your workflow, not against it
+The reader and editor can be set in the config if you don't want to use the defaults.
+`ripgrep` is optional, but the `-s` flag will fail without it.
 
-⚙️ Configurable - Customize reader, editor, and more
+Installation
+------------
 
-## Installation
-    bash
-    git clone https://github.com/Njoter/fznote
-    cd fznote
-    cargo install --path .
+```bash
+git clone https://github.com/Njoter/fznote
+cd fznote
+cargo install --path .
+```
 
-## Requirements
-*   fzf - The heart of fznote. Required for fuzzy finding.
-*   Some kind of reader. I recommend bat (or mdcat if you like markdown).
-*   ripgrep - Optional for content search
+Basic commands
+--------------
 
-## Basic commands
-    # Default: print a note to the terminal with cat
-    fznote
+```bash
+# Default: print a note to the terminal
+fznote [-s]
 
-    # Read a note with your configured reader (bat, less, mdcat)
-    fznote read
+# Read a note with your configured reader (bat, less, mdcat)
+fznote read [-s]
 
-    # Open a note in your configured editor
-    fznote edit
+# Open a note in your configured editor
+fznote edit [-s]
 
-    # Add a new note
-    fznote add mynote
+# Add a new note
+fznote add mynote
 
-    # Add with custom extension
-    fznote add mynote -x txt
+# Add with custom extension
+fznote add mynote -x txt
 
-    # Delete a note
-    fznote delete
+# Delete a note
+fznote delete [-s]
 
-    # Print the full path of a note (great for scripting)
-    fznote path
+# Print the full path of a note
+fznote path [-s]
+```
 
-    # Search content and read
-    fznote read -s
+The -s Flag
+-----------
 
-    # Search content and edit
-    fznote edit -s
+The `-s` (search) flag transforms a command into content search, letting
+you select a note by what's inside it, instead of by its name.
 
-    # Search content and delete
-    fznote delete -s
+Books
+-----
 
-## The -s Flag
-The ```-s``` (search) flag transform any command into content search, letting
-you search through the content of all your notes before selecting the one you need.
+Books are directories inside the notes root. `fznote books list` lists them, and the current book is marked.
+The current book is where all the basic commands operate.
 
-## Configuration
-fznote uses a YAML config file at ~/.config/fznote/config.yaml
+```bash
+# Default: Select a book with fzf and switch to it
+fznote books
+
+# Create a book
+fznote books add "New Book"
+
+# Rename a book
+fznote books rename
+
+# Delete a book
+fznote books delete
+
+# List your books
+fznote books list
+```
+
+Sync
+----
+
+Sync is git. fznote sync fetches, commits any uncommitted changes,
+pulls if behind, and pushes if ahead. One command, no manual git.
+
+```bash
+# Configure the remote (first time only)
+fznote sync setup
+
+# Reconfigure the remote
+fznote sync setup --force
+
+# Sync with the remote
+fznote sync
+```
+
+The notes directory is a git repo. You can cd into it and use git
+directly if you want — fznote doesn't hide it.
+
+Configuration
+-------------
+
+Config lives at `~/.config/fznote/config.yaml` (Linux) or `%APPDATA%\fznote\config.yaml` (Windows).
 
 ### Default configuration
-    directory: /home/user/.local/share/fznote/notes
-    reader: bat
-    preview_reader: bat
-    editor: vim
-    file_extension: md
+
+```yaml
+directory: ~/.local/share/fznote/notes
+current_book: My Book
+reader: bat
+preview_reader: bat
+editor: nvim
+file_extension: md
+```
+
+Philosophy
+----------
+
+fznote doesn't reimplement anything. It shells out to fzf, git, bat, and
+ripgrep, and orchestrates them into a workflow. The notes are files, the
+repo is git, and the tool stays out of the way.
+
+Errors are the underlying tools' errors. Paths are printed in full. The
+tool doesn't hide what it's doing.
+
+fznote trusts the user. It doesn't prevent unusual names, doesn't check
+extensions, and doesn't try to catch mistakes you might make on purpose.
+When something fails, the error tells you what happened.
